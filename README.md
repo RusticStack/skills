@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/logo.png" width="128" alt="RusticStack Skills logo: a pixel-art terminal screen in a rusted metal frame, showing green lines of text with one line cut out in orange">
+  <img src="assets/brand/logo.gif" width="160" alt="RusticStack Skills logo, animated: five black bars like lines of text on cream paper. One turns red, is cut in two and drifts away, and the rest close up into a tidy block.">
 </p>
 
 <h1 align="center">RusticStack Skills</h1>
