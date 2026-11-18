@@ -44,7 +44,8 @@ For example:
 
 - A comment repeats the next line: "// load the config", "// return the user".
 - A docstring repeats the name, signature, types, or parameter names.
-- A decorative banner, a section divider, a numbered step label, a closing-brace label, or an empty doc template.
+- A decorative banner, a section divider, a closing-brace label, or an empty doc template.
+- A step label that names nothing: "Step 3", "Part B", "Next". A short label that names a stage of a long function says something the code does not, and stays.
 - Emphasis or reassurance: "IMPORTANT", "this is a robust implementation".
 
 **The implementation:** it copies details the code owns, so it has to change whenever the code does, and it is wrong the first time someone forgets.

@@ -60,7 +60,7 @@ Use the repository's own tool if it has one, and treat its output as candidates.
 | --- | --- | --- |
 | JavaScript, TypeScript | knip, ts-prune, ESLint `no-unused-vars`, TypeScript `noUnusedLocals` | dynamic imports, files found by path, names in templates and configuration |
 | Python | vulture, Ruff `F401` and `F841` | `getattr`, decorators that register, `__all__`, framework hooks, fixtures |
-| Go | `deadcode` (golang.org/x/tools), staticcheck `U1000` | calls from assembly, `//go:linkname`, build tags and platforms other than the one analysed, exported API |
+| Go | `deadcode` (golang.org/x/tools), staticcheck `U1000` | `//go:linkname`, build tags and platforms other than the one analysed (run it once per configuration), a method needed only to satisfy an interface |
 | Rust | the `dead_code` and `unused` lints, Clippy | other features and targets, macros, `pub` items in a library |
 | Java, Kotlin | IDE inspections, ProGuard and R8 reports | reflection, dependency injection, serialization, service loaders |
 | C# | IDE analyzer `IDE0051`, compiler warning `CS0169` | reflection, dependency injection, XAML bindings, serialization |

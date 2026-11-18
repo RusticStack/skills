@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/logo.png" width="128" alt="RusticStack Skills logo: a pixel-art branch in rust with teal and amber leaves on a dark badge, with one violet twig cut off and lifted away">
+  <img src="assets/brand/logo.png" width="128" alt="RusticStack Skills logo: a pixel-art terminal screen in a rusted metal frame, showing green lines of text with one line cut out in orange">
 </p>
 
 <h1 align="center">RusticStack Skills</h1>
