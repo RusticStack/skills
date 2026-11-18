@@ -25,7 +25,9 @@ To check a suspected suppression, use the linter's own report of unused directiv
 - Shebang on line 1. Editor modelines (`vim:`, `-*- mode -*-`).
 - Generated-file markers and generator-owned regions: `<!-- BEGIN_TF_DOCS -->`, `<!-- START doctoc -->`, `<!-- ALL-CONTRIBUTORS-LIST:START -->`, `[[[cog ... ]]]`, `# >>> conda initialize >>>`.
 - Documentation include markers: `// tag::name[]` / `// end::name[]` (Asciidoctor), `// ANCHOR: name` / `// ANCHOR_END: name` (mdBook), `{@snippet}` markup (`// @start region=`, `// @highlight`).
-- Dependency-bot hints: `# renovate: datasource=... depName=...`.
+- Dependency-bot hints: `# renovate: datasource=... depName=...`, and the version comment after a pinned commit in a workflow (`uses: owner/repo@<sha> # v4.1.1`), which Dependabot and Renovate read and rewrite.
+- Spell checkers: `cspell:disable`/`enable`, `cspell:ignore word`, `cspell:words`, `# codespell:ignore word`.
+- Text that a documentation include matches by content: Sphinx `literalinclude` and docutils `include` find their `:start-after:` and `:end-before:` text in the source file, usually in a comment. Search the docs for a comment's text before deleting it from an included file.
 - Secret and security scanners: `# nosec`, `#nosec G101 -- why`, `# nosemgrep: rule`, `# pragma: allowlist secret`, `//NOSONAR`.
 - Translator comments extracted into message catalogs: `# Translators:`, `// TRANSLATORS:`, `/* translators: */`.
 - `// Deprecated:` paragraphs and `@deprecated` tags, which tools and compilers act on.
@@ -33,19 +35,19 @@ To check a suspected suppression, use the linter's own report of unused directiv
 ## Python
 
 - Line 1 or 2: `# -*- coding: ... -*-`. Inline script metadata block `# /// script` to `# ///`.
-- Types: `# type: ignore[code]`, `# type: int` type comments, `# mypy: ...`, `# pyright: ...`, `# pyre-ignore`, `# pytype: disable=`.
-- Lint and format: `# noqa`, `# noqa: CODE`, `# ruff: noqa`, `# flake8: noqa`, `# pylint: disable=`, `# isort: skip`, `# isort: off`/`on`, `# fmt: off`/`on`/`skip`.
-- Coverage: `# pragma: no cover`, `# pragma: no branch`.
+- Types: `# type: ignore[code]`, `# type: int` type comments, `# mypy: ...`, `# pyright: ...`, `# pyre-ignore[code]`, `# pyre-fixme[code]`, `# pyre-strict`, `# pytype: disable=`, `# ty: ignore[rule]`.
+- Lint and format: `# noqa`, `# noqa: CODE`, `# ruff: noqa`, `# flake8: noqa`, `# pylint: disable=`, `# pylint: disable-next=`, `# pylint: skip-file`, `# isort: skip`, `# isort: off`/`on`, `# fmt: off`/`on`/`skip`, `# autoflake: skip_file`, `# deptry: ignore[DEP001]`.
+- Coverage and mutation: `# pragma: no cover`, `# pragma: no branch`, `# pragma: no mutate` (mutmut).
 - Doctests: `>>>` examples and their expected output in docstrings, `# doctest: +ELLIPSIS`.
 - Docstrings read at run time: `argparse` with `description=__doc__`, click and typer command help, docopt usage grammar, Fire, FastAPI route descriptions, DRF and Django admin, pydantic `use_attribute_docstrings`, tool decorators that turn a docstring into a model-facing description. Sphinx autodoc, napoleon sections, mkdocstrings, and `#:` attribute comments feed generated docs.
-- Notebooks as scripts: `# %%` cells, `#| option:` (Quarto), `# Databricks notebook source`, `# COMMAND ----------`.
+- Notebooks as scripts: `# %%` cells, `#| option:` (Quarto), `# Databricks notebook source`, `# COMMAND ----------`, and the Jupytext header, a YAML block between `# ---` lines.
 - Cython: `# cython: ...`, `# distutils: ...`.
 
 ## JavaScript and TypeScript
 
-- File top: `// @ts-check`, `// @ts-nocheck`, `/// <reference ... />`, `// @flow`, `/** @jest-environment jsdom */`, `// @vitest-environment`, `/** @jsx h */`, `/** @jsxImportSource x */`.
+- File top: `// @ts-check`, `// @ts-nocheck`, `/// <reference ... />`, `// @flow`, `/** @jest-environment jsdom */`, `// @vitest-environment`, `/** @jsx h */`, `/** @jsxFrag F */`, `/** @jsxRuntime automatic */`, `/** @jsxImportSource x */`.
 - Types: `// @ts-expect-error`, `// @ts-ignore`, `// $FlowFixMe[code]`. In projects that type-check JavaScript, JSDoc tags are the types: `@type`, `@param`, `@returns`, `@typedef`, `@template`, `@satisfies`. `@internal` with `stripInternal`, and API Extractor release tags `@public`, `@beta`, `@alpha`. Closure Compiler annotations.
-- Lint and format: `eslint-disable`, `eslint-disable-next-line rule -- reason`, `/* eslint rule: "error" */`, `/* global name */`, `// prettier-ignore`, `// biome-ignore lint/x/y: reason`, `// deno-lint-ignore`.
+- Lint and format: `eslint-disable`, `eslint-disable-next-line rule -- reason`, `/* eslint rule: "error" */`, `/* global name */`, `/* exported name */`, `// prettier-ignore`, `// biome-ignore lint/x/y: reason`, `// deno-lint-ignore rule`, `// deno-lint-ignore-file`, `// oxlint-disable-next-line rule -- reason`.
 - Coverage: `/* istanbul ignore next */`, `/* c8 ignore start */`/`stop`, `/* v8 ignore next */`.
 - Bundlers: `/* webpackChunkName: "x" */` and the other `webpack*` comments inside `import()`, `/* @vite-ignore */`, `/* turbopackIgnore: true */`, `/* @__PURE__ */`, `/* #__PURE__ */`, `/*#__NO_SIDE_EFFECTS__*/`, `//# sourceMappingURL=`, `//# sourceURL=`.
 - Type tests and doc samples: `// $ExpectType`, `// $ExpectError`, `// ^?`, `// @errors:`, `// ---cut---`.
@@ -78,7 +80,9 @@ To check a suspected suppression, use the linter's own report of unused directiv
 - Javadoc with doclint enabled; `@deprecated` paired with `@Deprecated`.
 - `// CHECKSTYLE:OFF`/`ON`, `// SUPPRESS CHECKSTYLE Name`, `// NOPMD`, `// spotless:off`/`on`, `// @formatter:off`/`on`, `//noinspection Name`, `//$NON-NLS-1$`.
 - Maven plugin Javadoc tags (`@goal`, `@parameter`) in older plugins.
-- KDoc `@sample` pulls in a named function's body. Dokka `reportUndocumented` with `failOnWarning` is the Kotlin doc gate.
+- KDoc `@sample` pulls in a named function's body, and `@suppress` hides an element from the generated docs. Dokka `reportUndocumented` with `failOnWarning` is the Kotlin doc gate.
+- `// language=SQL` above a string literal turns on IntelliJ language injection. Kotlin scripts: the shebang, `@file:DependsOn(...)`, `@file:Repository(...)`.
+- ktlint and detekt are suppressed with `@Suppress` annotations. ktlint stopped reading `// ktlint-disable` comments in 0.50; report a leftover one instead of deleting it.
 
 ## C#
 
@@ -89,8 +93,28 @@ To check a suspected suppression, use the linter's own report of unused directiv
 ## Swift
 
 - `// swift-tools-version:` on line 1 of `Package.swift`.
-- `// swiftlint:disable rule`/`enable`/`:next`/`:previous`, `// swiftformat:disable`, `// swift-format-ignore`.
-- `// MARK:` drives editor navigation; keep it where the project uses it.
+- `// swiftlint:disable rule`/`enable`, with `:next`, `:this`, `:previous`; `// swiftformat:disable rule`/`enable`, `// swiftformat:options --indent 2`; `// swift-format-ignore`, `// swift-format-ignore-file`.
+- `///` and `/** */` feed DocC and Quick Help. Double backticks around a name are a symbol link, and `@Comment { }` hides a note from the output. SwiftLint `missing_docs`, when enabled, is the doc gate.
+- Sourcery: `// sourcery: key = value` annotations, and `// sourcery:inline:name` to `// sourcery:end` generated regions.
+- Playground pages: `//#-hidden-code` to `//#-end-hidden-code`, `/*#-editable-code*/` to `/*#-end-editable-code*/`.
+- `// MARK:`, `// TODO:` and `// FIXME:` drive Xcode's jump bar; keep `MARK` where the project uses it.
+
+## Objective-C
+
+- `#pragma mark` is Xcode navigation. `#pragma clang diagnostic push`, `ignored "-Wname"` and `pop` are one unit. `NS_ASSUME_NONNULL_BEGIN`/`END` is a pair that changes types.
+- `// NOLINT` and its variants, as in C. HeaderDoc `/*! ... */` and Doxygen blocks feed generated docs.
+
+## Scala
+
+- `// format: off`/`on` and `// scalafmt: { ... }` (scalafmt), `// scalafix:ok`, `// scalafix:off`/`on`, `// scalastyle:off`/`on`.
+- `//> using dep ...` and the other `//> using` lines configure a scala-cli build.
+- Markdown fences marked `scala mdoc` are compiled and run when the docs build.
+
+## Dart and Flutter
+
+- `// ignore: diagnostic`, `// ignore_for_file: diagnostic`, `// dart format off`/`on`, `// dart format width=100`, `// @dart = 2.17` before any code.
+- `// coverage:ignore-line`, `// coverage:ignore-start`/`end`, `// coverage:ignore-file`.
+- `///` feeds dartdoc, and the `public_member_api_docs` lint makes it mandatory when enabled. Dartdoc directives: `{@template name}` with `{@macro name}`, `{@tool snippet}`, `{@category name}`.
 
 ## Ruby and PHP
 
@@ -101,8 +125,12 @@ To check a suspected suppression, use the linter's own report of unused directiv
 
 - Shell: `# shellcheck disable=SC0000`, `# shellcheck source=path`, `# shellcheck shell=sh`, `# bats test_tags=`.
 - Dockerfile: `# syntax=`, `# escape=`, `# check=` at the top; `# hadolint ignore=DL0000`.
-- Terraform and friends: `#trivy:ignore:rule`, `#tfsec:ignore:rule`, `#checkov:skip=ID:reason`, `# tflint-ignore: rule`, `# kics-scan ignore`.
-- YAML: `# yaml-language-server: $schema=`, `# yamllint disable`, helm-docs `# -- description`, `# @schema` blocks, `#cloud-config` on line 1, `# noqa` for ansible-lint. TOML: `#:schema`.
+- Terraform and friends: `#trivy:ignore:rule`, `#tfsec:ignore:rule`, `#checkov:skip=ID:reason`, `# tflint-ignore: rule` (and `# tflint-ignore-file: rule`, which must be at line 1, column 1), `# kics-scan ignore-line`, `# kics-scan ignore-block`, `#ts:skip=RULE reason` (Terrascan, no space after `#`). Kubernetes manifests carry the same skips as annotations, which are not comments.
+- YAML: `# yaml-language-server: $schema=`, `# yamllint disable`/`enable`, `# yamllint disable-line`, `# yamllint disable-file` on line 1, `# zizmor: ignore[rule]`, `# noqa: rule` for ansible-lint. TOML: `#:schema`.
+- Helm: helm-docs `# -- description`, `# @default -- text`, `# @ignored`, `# @section -- title`; `# @schema` blocks (helm-schema). In a template, `{{/* ... */}}` is a comment, but a `#` line is not: actions inside it still run and can fail the render.
+- Ansible and cloud-init: `#jinja2: key:value` at the start of a template sets Jinja options. A cloud-init file is typed by its first line: `#cloud-config`, `#!`, `#include`, `#cloud-boothook`, `#part-handler`, `#cloud-config-archive`, `## template: jinja`.
+- Nix: `# deadnix: skip`, `/*nixfmt:disable*/`/`enable`, `/** ... */` doc comments read by nixdoc.
+- `.env`, `.gitignore`, `.gitattributes`, `.dockerignore`, `.editorconfig`, `CODEOWNERS`: a `#` starts a comment only at the start of a line. Mid-line it is usually part of the value or pattern, and `.env` parsers disagree about it. Leave these lines alone.
 - CMake and Bazel: `# cmake-lint: disable=`, `# cmake-format: off`/`on`, `# buildifier: disable=`, `# keep`, `# gazelle:` directives.
 - Makefile: `## description` after a target, where a `help` target prints them.
 
@@ -116,8 +144,21 @@ To check a suspected suppression, use the linter's own report of unused directiv
 
 - CSS: `/* stylelint-disable */` and its variants, `/* autoprefixer: off */`, `/* prettier-ignore */`, `/* @noflip */`.
 - HTML: conditional comments `<!--[if mso]>`, server-side includes `<!--# include -->`, `<!--esi -->`, WordPress block delimiters `<!-- wp:name -->`, `<!-- svelte-ignore code -->`, `<!-- htmlmin:ignore -->`, Thymeleaf `<!--/*/ ... /*/-->`.
-- Markdown: front matter between `---` lines, `<!-- markdownlint-disable -->` and its variants, `<!-- prettier-ignore-start -->`/`end`, `<!-- vale off -->`/`on`, `<!--more-->` and `<!-- truncate -->` excerpt markers, table-of-contents markers, and code-fence info strings that a doc-test runner reads.
+- Markdown lint and checks: front matter between `---` lines, `<!-- markdownlint-disable -->` and its variants (`-next-line`, `-file`, `capture`/`restore`, `configure-file`), `<!--lint disable rule-->` (remark), `<!-- prettier-ignore-start -->`/`end`, `<!-- vale off -->`/`on`, `<!-- vale Style.Rule = NO -->`, `<!-- textlint-disable -->`/`enable`, `<!-- markdown-link-check-disable -->`/`enable`.
+- Markdown structure: `<!--more-->` and `<!-- truncate -->` excerpt markers, `<!-- toc -->`/`<!-- tocstop -->`, `<!-- omit in toc -->`, generator regions such as `<!-- BLOG-POST-LIST:START -->`/`END`, `--8<-- "file"` includes with their `--8<-- [start:name]`/`[end:name]` markers in the included file.
+- Code fences: info strings a doc-test runner reads (`python notest`, `rust,ignore`, `scala mdoc`, `no_run`), `iex>` examples run by `doctest_file`, and Docusaurus `// highlight-next-line`, `// highlight-start`/`end` comments inside a fence.
+- gettext `.po` files: `#.` extracted comments, `#:` source references, `#,` flags such as `fuzzy`, and `#|` previous strings are data. Only `# ` followed by text is a translator's note.
 
 ## Other languages
 
-The same hazard exists wherever a tool reads comments: R roxygen `#'`, Emacs Lisp `;;;###autoload`, Lua `---@` annotations, Haskell Haddock `-- |` and `{-# PRAGMA #-}`, Perl `## no critic` and POD, PowerShell comment-based help (`<# .SYNOPSIS #>`) and `#requires`, LaTeX `% !TEX`. Apply the recognition rules.
+- **Zig:** `// zig fmt: off`/`on`. `///` and `//!` are doc comments, and a misplaced one is a compile error. A `test` named after a declaration is its doctest.
+- **Elixir and Erlang:** `# credo:disable-for-next-line` and the other `credo:disable-for-` forms, `# coveralls-ignore-start`/`stop`, `# sobelow_skip ["Check"]`. `@doc` and `@moduledoc` are attributes, and their `iex>` examples are tests. Erlang: `%% coding: utf-8` on the first two lines, EDoc `%% @doc` and `%% @private`.
+- **Haskell:** `{-# LANGUAGE ... #-}`, `{-# OPTIONS_GHC ... #-}` and every other `{-# ... #-}` pragma; Haddock `-- |`, `-- ^`, `-- $name`, `-- *`; doctest `-- >>>`; `{- HLINT ignore "Hint" -}`; `{- ORMOLU_DISABLE -}`/`ENABLE`, `{- FOURMOLU_DISABLE -}`/`ENABLE`.
+- **Lua:** `---@param`, `---@type`, `---@class`, `---@meta`, `---@diagnostic disable-next-line: code` (LuaLS); `-- luacheck: ignore`, `-- luacheck: push`/`pop`; `-- stylua: ignore`, `-- stylua: ignore start`/`end`; `-- selene: allow(lint)`.
+- **R:** roxygen `#'` blocks write the `NAMESPACE` file and the help pages, so `@export` and `@importFrom` are code. `# nolint`, `# nolint start`/`end`, `# nocov`, `# nocov start`/`end`, `# styler: off`/`on`, chunk options `#| label:`. Files under `tests/testthat/_snaps/` are expected output.
+- **Perl:** `## no critic (Policy)` and `## use critic`. POD from `=head1` to `=cut` is skipped by the parser, so removing `=cut` turns code into documentation; Test::Pod and Test::Pod::Coverage test it. `# PODNAME:` and `# ABSTRACT:` (Pod::Weaver), `#line N "file"`. Text after `__END__` or `__DATA__` is data.
+- **PowerShell:** comment-based help (`<# .SYNOPSIS ... #>`), `#requires -Version` and its other forms, and the `# SIG # Begin signature block` to `# SIG # End signature block` signature.
+- **LaTeX:** `% !TEX root = file.tex`, `% !TEX program =`, `% arara: pdflatex`, `% chktex 36`, `% chktex-file 18`, `%\begin{noindent}` (latexindent). A `%` at the end of a line removes the line break; deleting it adds a space to the output.
+- **Emacs Lisp:** `;;;###autoload`; the first line `;;; name.el --- description -*- lexical-binding: t -*-`; the `;; Package-Requires:`, `;; Version:`, `;;; Commentary:`, `;;; Code:` headers and the `;;; name.el ends here` footer; the `;; Local Variables:` block.
+
+For any other language, apply the recognition rules.
