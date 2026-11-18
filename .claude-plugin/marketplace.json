@@ -20,6 +20,13 @@
       "source": "./",
       "strict": false,
       "skills": ["./skills/prune-tests"]
+    },
+    {
+      "name": "clarify-code",
+      "description": "Make code say what a reader otherwise has to work out, without changing what it does.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/clarify-code"]
     }
   ]
 }

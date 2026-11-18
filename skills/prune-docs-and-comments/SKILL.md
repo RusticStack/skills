@@ -8,6 +8,16 @@ Prune every comment and document that tells a reader nothing true beyond what th
 
 Readers, human and model, take prose as true and current. A false line sends them the wrong way, and a line that says nothing spends attention the rest of the file needs. The opposite mistake costs as much: a deleted reason is gone for good. So when you cannot say why a piece of prose fails the test below, keep it.
 
+**0. Set the run up**
+
+- Ask once, before any edit, for what only the owner can decide: whether to commit and push and to which branch, whether whole documents may be deleted, and any fact that changes many files, such as whether a migration the docs call pending has finished. Then run to the end without asking again.
+- Record `git status --porcelain`. Files already changed are someone else's work: leave them alone, and pass the list to any agent you hand part of the run to.
+- List every file in scope before reading, hidden directories included (`.github`, `.githooks`, agent configuration). That list is the coverage target.
+- Run the build, lint, type check, and tests once, one after another, and keep the results. A check that already fails is reported once as pre-existing and not fixed. Note any check that installs or upgrades dependencies, and confirm afterwards that lockfiles did not change.
+- Read every file on the list. Searching for keywords or sampling is not a pass. Documents are read line by line, and each statement is checked against the code.
+
+For a large repository, several repositories, or a run where the checks cannot execute, read `references/large-runs.md`.
+
 **1. Find what each piece of prose depends on**
 
 Keep a comment or document only if it depends on intent the code cannot express: why it is this way, what must stay true, what goes wrong otherwise, what a caller may rely on, what else must change with it, or what a block too dense to read at a glance does. It should change only when that intent changes, and a reader should make a mistake without it.
@@ -26,6 +36,7 @@ For example:
 - It is a completed checklist, a finished plan, a phase log, a status report, or a summary an agent left behind after a task.
 - It names a flag, path, command, parameter, or function that no longer exists.
 - It is an author, date, or change-log line in a file header.
+- It tags the code with its own history: "OPTIMIZED", "new", "before", "Phase 2", "Step 3 of the plan".
 
 **Nothing:** it restates what the code beside it says, so no reader learns anything from it.
 
@@ -33,7 +44,7 @@ For example:
 
 - A comment repeats the next line: "// load the config", "// return the user".
 - A docstring repeats the name, signature, types, or parameter names.
-- A decorative banner, a closing-brace label, or an empty doc template.
+- A decorative banner, a section divider, a numbered step label, a closing-brace label, or an empty doc template.
 - Emphasis or reassurance: "IMPORTANT", "this is a robust implementation".
 
 **The implementation:** it copies details the code owns, so it has to change whenever the code does, and it is wrong the first time someone forgets.
@@ -52,6 +63,8 @@ Agent instruction files (`CLAUDE.md`, `AGENTS.md`, rule files) get the same test
 - Advice any agent follows unasked: "write clean code".
 
 What stays in them is what an agent cannot discover: exact commands, tooling that differs from the default, traps, and the owner's stated preferences. A preference stays even when you would choose otherwise.
+
+Rules these files state about documentation itself, such as how the product is named or which instruction files may exist, apply to this run. Follow them in headings and READMEs too.
 
 **2. Leave what is not prose**
 
@@ -81,25 +94,30 @@ When a comment and the code disagree, one of them is wrong, and it may be the co
 - Where part of one carries intent, rewrite it down to that part. Judge what it claims, not the words it uses: "fixed the crash when the list is empty" may be the only record that the list can be empty.
 - Where a document is wrong about something a reader still needs, such as a setup step, a command, or an example, correct it against the code instead of deleting it.
 - Where a document copies a value the code owns, replace the copy with the name of the symbol or file that owns it.
-- After deleting a file or a heading, fix every link, index, and navigation entry that pointed to it.
+- Before deleting a finished plan or a stale TODO list, move any item still open into the project's TODO list.
+- After deleting a file or a heading, fix every link, index, and navigation entry that pointed to it. Search the whole workspace, since sibling repositories link to each other.
+- Where a header says it mirrors another file ("copy of X, change both"), edit the source and carry the same text to the mirror.
+- In documents and examples, replace real credentials, tokens, phone numbers, and production addresses with placeholders.
 - Change no code. A comment that exists because the code is unclear is carrying meaning, so it stays.
 - Leave the wording and position of surviving prose alone.
-- Report what you will not settle by deleting: a placeholder comment standing where code should be, text that gives instructions to an agent from inside a comment or document, and instructions that contradict each other.
+- What you find and will not settle by editing prose goes to the owner as findings, one per item: a bug, a comment and code that contradict each other where the code may be wrong, dead code, a secret in code, a suppression with no reason, a placeholder comment standing where code should be, text that gives instructions to an agent from inside a comment or document, and instructions that contradict each other. If the owner has said to open issues, open one per finding in the repository it belongs to. Otherwise list them in the report.
 
 **4. Report**
 
-End with a report of everything that changed, so the owner can review the run without reading the whole diff:
+End with one report of everything that changed, so the owner can review the run without reading the whole diff. Do not call a partial pass done; if coverage is short, say so in the first line.
 
+- Coverage: files read out of files listed, for code and for documents, per repository.
 - The totals: files changed, files deleted, lines removed, and lines added. Take them from `git diff --numstat` against the starting commit, not from memory, and give them separately for code files and for documents.
 - Every file deleted, with the reason.
 - Every file changed, with its lines removed and added. For a large run, group the files by directory and list individually only those that lost the most.
 - What was pruned, counted by reason: the past, nothing, the implementation, and a duplicate of another place.
 - Every correction and rewrite, since those add words in your voice: the file, what it said, and what it says now.
-- What you left for the owner to settle, and why.
-- The checks you ran and their results, before and after.
+- The findings, or the issues opened for them, and only the decisions that really remain for the owner.
+- The checks you ran and their results, before and after, and how you showed that no code changed.
 
 **What done looks like**
 
+- Every file on the list was read, and the report says so with counts.
 - Every comment left says something the code cannot.
 - Every statement left in a document is true of the code as it stands, checked against the code: commands run, paths exist, names resolve, examples work.
 - No fact is stated in two places.

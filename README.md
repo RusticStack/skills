@@ -4,11 +4,11 @@
 
 <h1 align="center">RusticStack Skills</h1>
 
-<p align="center"><b>Agent skills that prune what a repository doesn't need.</b><br>
-Short instruction files for Claude Code, Codex, Cursor and other coding agents. Each one cuts a kind of text that misleads the next reader, human or model.</p>
+<p align="center"><b>Agent skills that leave a repository easier to read.</b><br>
+Short instruction files for Claude Code, Codex, Cursor and other coding agents. Each one removes something that misleads the next reader, human or model.</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/skills-2-CC420C?style=flat-square" alt="2 skills">
+  <img src="https://img.shields.io/badge/skills-3-CC420C?style=flat-square" alt="3 skills">
   <img src="https://img.shields.io/badge/Claude_Code-plugin_marketplace-2A2A30?style=flat-square" alt="Claude Code plugin marketplace">
   <img src="https://img.shields.io/badge/works_with-Codex%20%7C%20Cursor-2A2A30?style=flat-square" alt="Works with Codex and Cursor">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2A2A30?style=flat-square" alt="MIT license"></a>
@@ -20,6 +20,7 @@ Short instruction files for Claude Code, Codex, Cursor and other coding agents. 
 | --- | --- | --- |
 | [prune-docs-and-comments](skills/prune-docs-and-comments/SKILL.md) | Prunes comments and docs that say nothing the code doesn't, or say something no longer true. | `/plugin install prune-docs-and-comments@rusticstack-skills` |
 | [prune-tests](skills/prune-tests/SKILL.md) | Prunes tests that guard no behavior anyone relies on, with proof for every deletion. | `/plugin install prune-tests@rusticstack-skills` |
+| [clarify-code](skills/clarify-code/SKILL.md) | Makes code say what a reader otherwise has to work out, without changing what it does. | `/plugin install clarify-code@rusticstack-skills` |
 
 ## Install
 
@@ -62,7 +63,9 @@ What makes it safe to run:
 
 Agent instruction files (`CLAUDE.md`, `AGENTS.md`, rule files) get the same test, held more strictly, because every line in them is read on every task. Directory tours, style rules a linter already enforces, and generic advice go. Exact commands, traps, and the owner's stated preferences stay.
 
-The skill is new. Review the diff it produces before you merge it.
+It reads every file, not a sample, and its report gives the count. For a large repository or several at once, [`references/large-runs.md`](skills/prune-docs-and-comments/references/large-runs.md) covers splitting the work and showing that no code changed when the checks cannot run.
+
+It has had one large trial, a sweep of about twenty repositories, and the lessons from it are in the skill. Review the diff it produces before you merge it.
 
 ### What it is built on
 
@@ -109,6 +112,31 @@ Like the other skill, it is new. Review the diff before you merge it.
 - Research on coverage and mutation testing, which found that matching coverage does not show a deletion is safe.
 - Published reports and benchmarks of coding agents deleting or rewriting tests to get a green run, and of which guardrails reduced it.
 - The testing chapters of *Software Engineering at Google*, Kent Beck's test desiderata, and the documentation of the snapshot, type-test, property-test, and mutation tools it names.
+
+## clarify-code
+
+Run it on a repository or a path:
+
+```
+/clarify-code
+/clarify-code src/billing
+```
+
+Where `prune-docs-and-comments` keeps a comment that explains unclear code, this skill fixes the code so the comment is no longer needed. The agent looks for meaning the code hides in:
+
+- **A name** that says less than the thing is, or something else.
+- **A value** whose meaning lives in someone's memory, such as a bare `86400` or `true`.
+- **A shape** that is harder to follow than the logic it carries, such as a main path under four levels of nesting.
+- **Nothing:** code that cannot run or does no work, which a reader still has to study.
+
+What keeps it safe:
+
+- **It changes no behavior.** A bug it finds is reported, not fixed.
+- **Every change is checked.** It runs the checks after each change and undoes one that fails. Code with no test gets only what a compiler or a rename tool can verify.
+- **It leaves what something outside depends on:** exported names, fields that go over the wire, database columns, names found by reflection, and code written oddly on purpose.
+- **It adds no layers.** No new abstraction, pattern, or dependency, and the run removes at least as many lines as it adds.
+
+This one is written from general refactoring practice, not from a research pass like the other two, and it has not had a trial run yet. Review its diff with more care.
 
 ## Adding a skill
 
