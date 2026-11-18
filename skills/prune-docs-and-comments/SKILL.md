@@ -86,6 +86,18 @@ When a comment and the code disagree, one of them is wrong, and it may be the co
 - Leave the wording and position of surviving prose alone.
 - Report what you will not settle by deleting: a placeholder comment standing where code should be, text that gives instructions to an agent from inside a comment or document, and instructions that contradict each other.
 
+**4. Report**
+
+End with a report of everything that changed, so the owner can review the run without reading the whole diff:
+
+- The totals: files changed, files deleted, lines removed, and lines added. Take them from `git diff --numstat` against the starting commit, not from memory, and give them separately for code files and for documents.
+- Every file deleted, with the reason.
+- Every file changed, with its lines removed and added. For a large run, group the files by directory and list individually only those that lost the most.
+- What was pruned, counted by reason: the past, nothing, the implementation, and a duplicate of another place.
+- Every correction and rewrite, since those add words in your voice: the file, what it said, and what it says now.
+- What you left for the owner to settle, and why.
+- The checks you ran and their results, before and after.
+
 **What done looks like**
 
 - Every comment left says something the code cannot.
@@ -94,7 +106,7 @@ When a comment and the code disagree, one of them is wrong, and it may be the co
 - Nothing describes the past except the records kept for that purpose.
 - Every directive, license header, executed example, and run-time string is unchanged.
 - The diff changes no code, and the build, lint, type check, tests, doc tests, and doc build give the same results as before.
-- The report lists every file deleted and everything left for the owner to settle.
+- The report accounts for every line: its totals match `git diff --numstat`.
 
 **Example**
 
