@@ -1,0 +1,18 @@
+{
+  "name": "rusticstack-skills",
+  "owner": {
+    "name": "RusticStack"
+  },
+  "metadata": {
+    "description": "Agent skills from RusticStack"
+  },
+  "plugins": [
+    {
+      "name": "prune-docs-and-comments",
+      "description": "Prune comments and docs that say nothing the code doesn't, or say something no longer true.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/prune-docs-and-comments"]
+    }
+  ]
+}
