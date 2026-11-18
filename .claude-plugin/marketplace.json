@@ -12,21 +12,45 @@
       "description": "Prune comments and docs that say nothing the code doesn't, or say something no longer true.",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/prune-docs-and-comments"]
+      "skills": [
+        "./skills/prune-docs-and-comments"
+      ]
     },
     {
       "name": "prune-tests",
       "description": "Prune tests that guard no behavior anyone relies on, with proof for every deletion.",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/prune-tests"]
+      "skills": [
+        "./skills/prune-tests"
+      ]
     },
     {
       "name": "clarify-code",
       "description": "Make code say what a reader otherwise has to work out, without changing what it does.",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/clarify-code"]
+      "skills": [
+        "./skills/clarify-code"
+      ]
+    },
+    {
+      "name": "prune-dead-code",
+      "description": "Prune code that nothing runs and nothing reaches, with proof for every deletion.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/prune-dead-code"
+      ]
+    },
+    {
+      "name": "prune-dependencies",
+      "description": "Prune dependencies the project does not use, with a clean install and build as proof.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/prune-dependencies"
+      ]
     }
   ]
 }

@@ -18,15 +18,19 @@ Read this when the scope is a large repository or several repositories, or when 
 
 ## Proving that no code changed
 
-Use the project's build, type check, and tests when they run. When they cannot, because dependencies are not installed or a service is missing, compare the code with its comments removed, before and after:
+Passing checks show that nothing broke, not that no code changed. So compare the code with its comments removed, before and after, on every run, and run the project's build, type check, tests, doc tests, and doc build as well whenever they can execute. Use the same toolchain and flags both times.
 
-- **TypeScript and JavaScript:** transpile the committed copy and the working copy with whitespace minified and compare the output, for example `bun build --no-bundle --minify-whitespace <file>`. Put the committed copy beside the original under a temporary name so its imports resolve; a copy in another directory always differs.
+- **TypeScript and JavaScript:** transpile the committed copy and the working copy with whitespace minified and compare the output, for example `bun build --no-bundle --minify-whitespace <file>`. Put the committed copy beside the original under a temporary name so its imports resolve; a copy in another directory always differs. Delete the copy afterwards and confirm `git status` no longer lists it. This proves the emitted JavaScript only: types are discarded, so it does not see a changed JSDoc type or a removed `@ts-` directive.
 - **Go:** compare the token streams with comments dropped, using `go/scanner`.
-- **Any language:** `git diff -U0`, then check that every changed line is a comment or sits in a document.
+- **Any language:** `git diff -U0`, then check that every changed line is a comment or sits in a document. Docstrings, Rust `///` and `//!` doc comments, a comment trailing code on the same line, and a line inside a multi-line string are not comments for this check; they are code or sit beside code, and need a token or syntax-tree comparison.
 
-A comment-only diff can still change behavior where a tool reads comments. That is what `load-bearing.md` is for; this check does not replace it.
+Do not compare compiled binaries or bytecode. Line tables move with comment lines, so they differ when the logic is identical.
 
-Say in the report which proof you used for each repository.
+Each of these proofs drops comments before comparing, so none of them sees a deleted directive. After the comparison, search the removed lines of the diff for the forms in `load-bearing.md`: suppressions, build tags, `//go:` lines, `@ts-` directives, `Output:` blocks, license markers, encoding lines. A hit is restored unless you can show nothing reads it.
+
+Deleting comment lines also moves line numbers. Anything that records them can change: `__LINE__`, a snapshot of a stack trace, a document or baseline file that cites a line.
+
+Say in the report which proof you used for each repository, and what it does not cover.
 
 ## Several repositories
 

@@ -5,10 +5,10 @@
 <h1 align="center">RusticStack Skills</h1>
 
 <p align="center"><b>Agent skills that leave a repository easier to read.</b><br>
-Short instruction files for Claude Code, Codex, Cursor and other coding agents. Each one removes something that misleads the next reader, human or model.</p>
+Short instruction files for Claude Code, Codex, Cursor and other coding agents. Each one removes or fixes something that costs the next reader, human or model.</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/skills-3-CC420C?style=flat-square" alt="3 skills">
+  <img src="https://img.shields.io/badge/skills-5-CC420C?style=flat-square" alt="5 skills">
   <img src="https://img.shields.io/badge/Claude_Code-plugin_marketplace-2A2A30?style=flat-square" alt="Claude Code plugin marketplace">
   <img src="https://img.shields.io/badge/works_with-Codex%20%7C%20Cursor-2A2A30?style=flat-square" alt="Works with Codex and Cursor">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2A2A30?style=flat-square" alt="MIT license"></a>
@@ -21,6 +21,8 @@ Short instruction files for Claude Code, Codex, Cursor and other coding agents. 
 | [prune-docs-and-comments](skills/prune-docs-and-comments/SKILL.md) | Prunes comments and docs that say nothing the code doesn't, or say something no longer true. | `/plugin install prune-docs-and-comments@rusticstack-skills` |
 | [prune-tests](skills/prune-tests/SKILL.md) | Prunes tests that guard no behavior anyone relies on, with proof for every deletion. | `/plugin install prune-tests@rusticstack-skills` |
 | [clarify-code](skills/clarify-code/SKILL.md) | Makes code say what a reader otherwise has to work out, without changing what it does. | `/plugin install clarify-code@rusticstack-skills` |
+| [prune-dead-code](skills/prune-dead-code/SKILL.md) | Prunes code that nothing runs and nothing reaches, with proof for every deletion. | `/plugin install prune-dead-code@rusticstack-skills` |
+| [prune-dependencies](skills/prune-dependencies/SKILL.md) | Prunes dependencies the project does not use, with a clean install and build as proof. | `/plugin install prune-dependencies@rusticstack-skills` |
 
 ## Install
 
@@ -71,8 +73,8 @@ It has had one large trial, a sweep of about twenty repositories, and the lesson
 
 The rules come from a review of published research and vendor guidance, including:
 
-- Studies of how comments affect model accuracy. Wrong comments scored worse than no comments, accurate comments helped, and commented-out code in the prompt raised defects in generated code.
-- Studies of repository instruction files, which found that generated files raised cost without raising task success, while short developer-written ones helped.
+- Studies of how comments affect model accuracy. In two studies wrong comments scored worse than no comments. Accurate comments helped in some studies and made no significant difference in another. In one study, defective commented-out code in the prompt raised defects in generated code.
+- Studies of repository instruction files. One benchmark found that generated files raised cost without raising task success, and that developer-written files gave a small average gain, also at higher cost. A smaller study found no measurable effect.
 - Comment taxonomies and code-comment inconsistency research from software engineering.
 - The comment sections of the Google style guides, the Linux kernel coding style, PEP 8 and PEP 257, the Go doc comment guide, and the Rust API guidelines.
 - The documentation of the linters, type checkers, build tools and doc generators whose directives live in comments.
@@ -95,22 +97,22 @@ The agent asks what each test depends on. A test stays only if it depends on beh
 
 What makes it safe to run:
 
-- **It proves each deletion.** The agent breaks the behavior a test claims to guard and runs the test. A test that fails stays. Reading alone is never the evidence.
+- **It proves each deletion.** For a test that looks unable to fail, the agent breaks the behavior it claims to guard and runs it; a test that fails stays. A test tied to the implementation is rewritten, not deleted. Reading alone is never the evidence.
 - **It never touches a failing test.** A failing test is reported with its output, not deleted, skipped, or weakened.
 - **It leaves what only looks useless.** Type-level and compile-fail tests, security checks that something stays removed, characterization tests, snapshots, and saved fuzz inputs stay. [`references/load-bearing.md`](skills/prune-tests/references/load-bearing.md) lists the kinds and ten rules for recognizing one that isn't listed.
 - **It changes no production code,** and it does not regenerate snapshots, add skip markers, or edit CI settings and coverage thresholds.
 - **It repairs before it deletes.** A test whose assertions never run, for behavior that still exists, is fixed so they run.
-- **It reports everything:** each deleted test with the break that it did not catch, and each candidate kept for lack of evidence.
+- **It reports everything:** each deleted test with its evidence (the break it did not catch, the twin that stays, or the search that found nobody asking for it), and each candidate kept for lack of evidence.
 
 It needs a suite it can run. Without one it deletes nothing and reports its candidates.
 
-Like the other skill, it is new. Review the diff before you merge it.
+It is new and has had no trial run. Review the diff before you merge it.
 
 ### What it is built on
 
 - Studies of pseudo-tested code, where a method's body can be removed without any test failing, and of tests that pass while their assertions never run.
-- Research on coverage and mutation testing, which found that matching coverage does not show a deletion is safe.
-- Published reports and benchmarks of coding agents deleting or rewriting tests to get a green run, and of which guardrails reduced it.
+- Research on coverage and mutation testing, which found coverage only weakly tied to fault detection. The skill infers from it that matching coverage does not show a deletion is safe; no study tested that directly.
+- User reports of coding agents deleting or rewriting tests to get a green run, and one benchmark of impossible tasks that measured test tampering and which guardrails reduced it.
 - The testing chapters of *Software Engineering at Google*, Kent Beck's test desiderata, and the documentation of the snapshot, type-test, property-test, and mutation tools it names.
 
 ## clarify-code
@@ -127,16 +129,43 @@ Where `prune-docs-and-comments` keeps a comment that explains unclear code, this
 - **A name** that says less than the thing is, or something else.
 - **A value** whose meaning lives in someone's memory, such as a bare `86400` or `true`.
 - **A shape** that is harder to follow than the logic it carries, such as a main path under four levels of nesting.
-- **Nothing:** code that cannot run or does no work, which a reader still has to study.
+- **Nothing:** code that does no work, where the compiler or linter can show it within the file. Anything wider is reported or left to `prune-dead-code`.
 
 What keeps it safe:
 
 - **It changes no behavior.** A bug it finds is reported, not fixed.
 - **Every change is checked.** It runs the checks after each change and undoes one that fails. Code with no test gets only what a compiler or a rename tool can verify.
 - **It leaves what something outside depends on:** exported names, fields that go over the wire, database columns, names found by reflection, and code written oddly on purpose.
-- **It adds no layers.** No new abstraction, pattern, or dependency, and the run removes at least as many lines as it adds.
+- **It adds no layers.** No new abstraction, pattern, dependency, or suppression. Merging duplicated logic is reported, not done.
 
-This one is written from general refactoring practice, not from a research pass like the other two, and it has not had a trial run yet. Review its diff with more care.
+This one is written from general refactoring practice. It was audited against the research behind the first two skills, and has had no research pass of its own and no trial run. Review its diff with more care.
+
+## prune-dead-code
+
+```
+/prune-dead-code
+/prune-dead-code src/billing
+```
+
+The agent follows references inward from the entry points and looks for code reached by nothing, by a path that cannot run, only by its own tests, or left behind after a replacement. Finished feature flags go with the branch they no longer take.
+
+- **A clean search is not proof.** Each deletion needs a text search of the whole workspace and a passing build and test run without the code, under every configuration the project supports. A test is deleted with the code only if it tests nothing else, and each one is listed.
+- **It leaves what a search cannot see.** Code reached by a name in a string, by a file's path, from another repository, or once a year stays. [`references/hidden-uses.md`](skills/prune-dead-code/references/hidden-uses.md) lists the kinds.
+- **It removes no public API** unless the owner says to, changes no behavior, and adds no suppression to quiet a tool.
+
+## prune-dependencies
+
+```
+/prune-dependencies
+```
+
+The agent checks each declared dependency for a use: an import in code that runs, a command the project runs, a plugin a tool loads, or a consumer of the published package. It removes the unused, moves the misplaced to the right list, and reports redundant packages, stale overrides, and imports that have no declaration.
+
+- **The proof is a clean install.** After each removal it deletes the installed packages, installs from the new lockfile, and runs the build, tests, and verification scripts. A stale installed tree hides a missing package. Where another package keeps the dependency installed anyway, only the search counts.
+- **It leaves what is used without an import:** plugins named in configuration, packages run as commands, peer and optional dependencies, and pins that exist for a security fix. [`references/hidden-uses.md`](skills/prune-dependencies/references/hidden-uses.md) lists the kinds.
+- **It changes no versions and no code.** Upgrades are out of scope unless the owner asks, and replacing a package with your own code is reported as an opportunity.
+
+Like `clarify-code`, these two are written from general practice. They were audited against the research behind the other two skills, and have had no research pass of their own and no trial run.
 
 ## Adding a skill
 
@@ -146,7 +175,7 @@ This one is written from general refactoring practice, not from a research pass 
 
 ## Acknowledgements
 
-The shape of both skills (one test, a few ways to fail it, a done checklist, one annotated diff) follows [`prune-tests`](https://github.com/caldoai/skills/blob/main/skills/prune-tests/SKILL.md) from [caldoai/skills](https://github.com/caldoai/skills), MIT licensed.
+The shape of these skills (one test, a few ways to fail it, a done checklist, one annotated diff) follows [`prune-tests`](https://github.com/caldoai/skills/blob/main/skills/prune-tests/SKILL.md) from [caldoai/skills](https://github.com/caldoai/skills), MIT licensed.
 
 ## License
 

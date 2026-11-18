@@ -19,28 +19,28 @@ Keeping a test that turned out to be worthless costs a few seconds per run. Dele
 
 ## Judged by another tool
 
-These pass at run time whatever the code does. The check happens elsewhere.
+Most of these pass or do nothing in the ordinary test run, and the check happens elsewhere. Some run inside the test runner and still look like nothing: trybuild cases and `compile_fail` doc tests under `cargo test`, and ArchUnit and NetArchTest rules as unit tests.
 
 - TypeScript: `*.test-d.ts` with `expectType`, `expectAssignable`, `expectError` (tsd); `expectTypeOf` (expect-type, checked by `tsc`); `// @ts-expect-error` above a line that must not compile.
 - Python: `typing.assert_type`, checked by mypy or pyright; stub tests (`stubtest`) and their allowlists.
 - Rust: `compile_fail` doc tests; trybuild cases with their `*.stderr` files; `tests/public-api.txt` (cargo public-api).
 - C and C++: `static_assert`.
-- API reports: `*.api.md` (API Extractor), Go `apidiff`, japicmp, cargo-semver-checks.
+- API reports: `*.api.md` (API Extractor), Go `apidiff`, japicmp, cargo-semver-checks. These tools have gaps, so a hand-written API test beside one is not a duplicate.
 - Architecture and convention rules: ArchUnit (including frozen rules and their violation store), NetArchTest, import-linter contracts, dependency-cruiser rules, ESLint `no-restricted-imports`, license-header checks.
 
 ## Expectation and replay files
 
 - Snapshots: Jest and Vitest `.snap` files and inline snapshots, insta `.snap` and pending `.snap.new`.
 - Golden and approved files: Go `testdata/`, `*.approved.*`.
-- Saved failing inputs, replayed on every run: `.hypothesis/`, `proptest-regressions/`, Go `testdata/fuzz/<FuzzName>/`, a hard-coded fast-check `seed` and `path`.
+- Saved failing inputs, replayed on later runs: `@example(...)` decorators in Hypothesis (always tried), `.hypothesis/` (best effort; entries can be dropped on an upgrade or a test change), `proptest-regressions/`, Go `testdata/fuzz/<FuzzName>/`, a hard-coded fast-check `seed` and `path`.
 - Recorded wire formats: old binary or JSON fixtures, names containing `v1`, `legacy`, or `compat`, protobuf `reserved` fields.
 
-After deleting a test that owned a snapshot, remove that test's entries only. Jest and Vitest fail a CI run on entries that no test owns. Do not clean up with an update-all mode, which also re-records real failures: `jest -u`, `vitest -u`, `go test -update`, `cargo insta accept`, `TRYBUILD=overwrite`.
+After deleting a test that owned a snapshot, remove that test's entries only. Jest fails any run on entries that no test owns, and Vitest fails in CI by default. insta, Go golden files, and approved files do not fail on orphans, so find the deleted test's files by name; `cargo insta test --unreferenced=delete` removes only unreferenced snapshots. Never delete a whole snapshot file that tests still use: regenerating it blesses the current output without review. Do not clean up with an update-all mode, which also re-records real failures: `jest -u`, `vitest -u`, `go test -update`, `cargo insta accept`, `TRYBUILD=overwrite`.
 
 ## Looks like the past
 
 - An absence that is a policy: a removed endpoint returns 404, a dangerous option is rejected, a token, password, or key does not appear in output or logs.
-- A regression test tied to a bug, issue, or CVE. It fails on the commit before the fix.
+- A regression test tied to a bug, issue, or CVE. It often fails on the commit before the fix; passing there does not make it deletable.
 - A schema or migration check: every model change has a migration, a migration can be reversed.
 
 ## Looks like the implementation
