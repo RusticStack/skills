@@ -13,6 +13,13 @@
       "source": "./",
       "strict": false,
       "skills": ["./skills/prune-docs-and-comments"]
+    },
+    {
+      "name": "prune-tests",
+      "description": "Prune tests that guard no behavior anyone relies on, with proof for every deletion.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/prune-tests"]
     }
   ]
 }
